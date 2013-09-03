@@ -1,0 +1,111 @@
+README
+______________________________
+## Author Information ##
+Name : Anchal Agarwal
+Professor: Erez Zadok
+______________________________
+
+Files created/modified for HW1:
+
+syscall_xintegrity.h: Header file which defines the structures required by the different modes.
+
+xhw1.c: This file is a user level program which passes the required input parameters to the system call. The input arguments as required by xhw1.c are as follows:
+
+	1. Mode 1 - File name is only required.
+	2. Mode 2 - File name and password are required
+	3. Mode 3 - File name and flag values are required.
+
+sys_xintegrity.c: This file is the system call which takes a void* parameter and checks for mode values. Based on the mode valued different actions are performed.
+
+password.txt: Contains the password for user mode 2.
+
+kernel.config: Location - /usr/src/hw1-anaagarwal/ ; Kernel configuration file.
+___________________________________________________________________
+
+Mode 1 :
+
+Description: 	Return the existing known integrity of file.
+
+
+Input: 
+	./xhw1 1 <FILE_NAME>
+
+Output: 
+
+	Positive Case: Returns the existing integrity of file.
+	Negative cases: Appropriate error numbers are returned on following failures-
+			     File exists with integrity
+			     File exists with no integrity
+			    File doesn't exists
+			   User doesn't have permission to read file
+			   Incorrect number of arguments passed
+
+
+
+__________________________________________________________________
+
+
+___________________________________________________________________
+
+Mode 2 :
+
+Description: 	Compute the updated integrity of file and add to file as an extended attribute.
+
+
+Input: 
+	./xhw1 2 <FILE_NAME>  "AncMode@"
+ 
+Output: 
+
+	Positive Cases: Computes an updated integrity of file.
+				Checks if file exists with old integrity.
+	Negative cases: Appropriate error numbers are returned on following failures-
+			     	File exists with no integrity
+			     	File doesn't exists
+			     	Credbuf is not valid
+			     	User doesn't have permission to read file
+			     	Incorrect number of arguments passed
+				File System does not support Extended Attributes
+				Out of Memory while assigning ibuf
+
+__________________________________________________________________
+
+___________________________________________________________________
+
+Mode 3 :
+
+Description: 	Opens a file with integrity checking and returns the file descriptor to the user. Depending on the flags:
+			O_TRUNC: file descriptor is returned because in this mode all attributes of the file are set to 0. Hence checksum is not computed as it will be 0.
+			O_CREAT: If file does not exist a new file is created and its file descriptor is returned. If the file already exists old and computed checksum are compared and file descriptor is returned only if they match else the error "File is corrupted" is returned to the kernel.
+			O_RDONLY , O_WRONLY, O_RDWR: Checksum match is done and file descriptor is returned accordingly.
+
+Input: 
+	./xhw1 3 <FILE_NAME> oflag 0  (mode=0)
+
+Output: 
+
+	Positive Case: Open a file with integrity checking for .
+				Create a new file in O_CREAT mode if it does not exists
+				Open a file and return fd on checksum match for valid flag values
+				Do not return fd if checksum mismatches
+				Return fd in O_TRUNC mode.
+				Open file with no checksum
+	Negative cases: Appropriate error numbers are returned on following failures-
+				Invalid flag value
+				User does not have permission to r/w file.
+				Incorrect number of arguments passed
+				File System does not support Extended Attributes
+				Out of Memory while assigning ibuf
+
+
+__________________________________________________________________
+
+NOTE: 
+
+1. Please use "dmesg | tail " for kernel messages if not visible on console.
+
+REFERENCES:
+
+1. http://www.cs.fsu.edu/~baker/devices/lxr/http/source/linux/security/integrity/ima/ima.h
+2. http://lxr.linux.no/linux+v2.6.29.6/fs/ufs/super.c#L1087
+
